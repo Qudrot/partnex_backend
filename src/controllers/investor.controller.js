@@ -1,9 +1,10 @@
 const investorService = require("../services/investor.service");
 
-const createProfile = async (req, res) => {
+const saveProfile = async (req, res) => {
   try {
-    const result = await investorService.createProfile(req.user.id, req.body);
-    return res.status(201).json(result);
+    const result = await investorService.saveProfile(req.user.id, req.body);
+    // Send 201 for a new profile, 200 for an update
+    return res.status(result.isNew ? 201 : 200).json(result);
   } catch (err) {
     return res.status(err.statusCode || 500).json({ message: err.message });
   }
@@ -27,4 +28,4 @@ const listSmes = async (req, res) => {
   }
 };
 
-module.exports = { createProfile, getMyProfile, listSmes };
+module.exports = { saveProfile, getMyProfile, listSmes };

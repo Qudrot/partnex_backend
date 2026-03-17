@@ -1,9 +1,9 @@
 const db = require("../config/db");
 
 // ==========================================
-// 1. CREATE INVESTOR PROFILE
+// 1. SAVE (CREATE OR UPDATE) INVESTOR PROFILE
 // ==========================================
-const createProfile = async (userId, payload) => {
+const saveProfile = async (userId, payload) => {
   const { 
     full_name, 
     organization, 
@@ -17,43 +17,57 @@ const createProfile = async (userId, payload) => {
     throw { statusCode: 400, message: "full_name is required" };
   }
 
-  // Prevent duplicate profiles
-  const [existing] = await db.execute("SELECT id FROM investors WHERE owner_user_id = ?", [userId]);
-  if (existing.length > 0) {
-    throw { statusCode: 409, message: "Investor profile already exists for this user" };
-  }
-
   // Safely stringify the sectors array for the MySQL JSON column
   const sectorsJson = Array.isArray(preferred_sectors) 
     ? JSON.stringify(preferred_sectors) 
     : null;
 
-  const [result] = await db.execute(
-    `INSERT INTO investors (
-      owner_user_id, full_name, organization, location, 
-      investor_type, preferred_sectors, typical_ticket_size
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      userId, 
-      full_name, 
-      organization || null, 
-      location || null, 
-      investor_type || null, 
-      sectorsJson, 
-      typical_ticket_size || null
-    ]
-  );
+  // Check if the profile already exists
+  const [existing] = await db.execute("SELECT id FROM investors WHERE owner_user_id = ?", [userId]);
 
-  return {
-    message: "Investor profile created successfully",
-    investor: {
-      id: result.insertId,
-      owner_user_id: userId,
-      full_name,
-      investor_type,
-      preferred_sectors
-    }
-  };
+  if (existing.length > 0) {
+    // PROFILE EXISTS -> UPDATE IT
+    await db.execute(
+      `UPDATE investors 
+       SET full_name = ?, organization = ?, location = ?, investor_type = ?, 
+           preferred_sectors = ?, typical_ticket_size = ?
+       WHERE owner_user_id = ?`,
+      [
+        full_name, 
+        organization || null, 
+        location || null, 
+        investor_type || null, 
+        sectorsJson, 
+        typical_ticket_size || null, 
+        userId
+      ]
+    );
+    
+    return { message: "Investor profile updated successfully", isNew: false };
+  } else {
+    // PROFILE DOES NOT EXIST -> CREATE IT
+    const [result] = await db.execute(
+      `INSERT INTO investors (
+        owner_user_id, full_name, organization, location, 
+        investor_type, preferred_sectors, typical_ticket_size
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userId, 
+        full_name, 
+        organization || null, 
+        location || null, 
+        investor_type || null, 
+        sectorsJson, 
+        typical_ticket_size || null
+      ]
+    );
+
+    return { 
+      message: "Investor profile created successfully", 
+      isNew: true,
+      investor: { id: result.insertId, owner_user_id: userId, full_name }
+    };
+  }
 };
 
 // ==========================================
@@ -124,4 +138,4 @@ const listSmesWithScores = async (query) => {
   return { smes: rows, meta: { limit, offset, count: rows.length } };
 };
 
-module.exports = { createProfile, getMyProfile, listSmesWithScores };
+module.exports = { saveProfile, getMyProfile, listSmesWithScores };

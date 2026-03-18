@@ -9,7 +9,7 @@ const authorize = require("../middleware/authorize");
 router.get("/smes", authenticate, authorize("investor"), investorController.listSmes);
 
 // NEW routes for investor profile creation and fetching
-router.post("/profile", authenticate, authorize("investor"), investorController.createProfile);
+router.post("/profile", authenticate, authorize("investor"), investorController.saveProfile);
 router.get("/me", authenticate, authorize("investor"), investorController.getMyProfile);
 
 module.exports = router;

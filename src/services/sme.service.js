@@ -20,7 +20,14 @@ const createProfile = async (userId, payload) => {
     existing_liabilities,
 
     prior_funding_history,
-    repayment_history
+    repayment_history,
+
+    phone_number,
+    website,
+    whatsapp,
+    linkedin,
+    twitter,
+    bio
   } = payload;
 
   // Validate required fields and types
@@ -97,6 +104,12 @@ if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
       business_name,
       industry_sector,
       location,
+      phone_number,   
+      website,       
+      whatsapp,      
+      linkedin,       
+      twitter,        
+      bio,      
       years_of_operation,
       number_of_employees,
       annual_revenue_year_1,
@@ -110,28 +123,32 @@ if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
       existing_liabilities,
       prior_funding_history,
       repayment_history
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
     [
       userId,
       business_name,
       industry_sector,
       location,
+      
+     
+      phone_number || null,
+      website || null,
+      whatsapp || null,
+      linkedin || null,
+      twitter || null,
+      bio || null,
+
       Number(years_of_operation),
       Number(number_of_employees),
-
       Number(annual_revenue_year_1),
       Number(annual_revenue_amount_1),
-
       Number(annual_revenue_year_2),
       Number(annual_revenue_amount_2),
-
       annual_revenue_year_3 != null ? Number(annual_revenue_year_3) : null,
       annual_revenue_amount_3 != null ? Number(annual_revenue_amount_3) : null,
-
       monthly_revenue != null ? Number(monthly_revenue) : null,
       Number(monthly_expenses),
       Number(existing_liabilities),
-
       String(prior_funding_history),
       repayment_history != null ? String(repayment_history) : null
     ]
@@ -192,7 +209,14 @@ const updateProfile = async (userId, payload) => {
     existing_liabilities: payload.existing_liabilities,
 
     prior_funding_history: payload.prior_funding_history,
-    repayment_history: payload.repayment_history
+    repayment_history: payload.repayment_history,
+
+    phone_number: payload.phone_number,
+    website: payload.website,
+    whatsapp: payload.whatsapp,
+    linkedin: payload.linkedin,
+    twitter: payload.twitter,
+    bio: payload.bio
   };
 
   // Validate numeric fields only if provided

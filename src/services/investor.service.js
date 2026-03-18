@@ -131,8 +131,8 @@ const listSmesWithScores = async (query) => {
     params.push(risk);
   }
 
-  sql += " ORDER BY (sc.score IS NULL), sc.score DESC LIMIT ? OFFSET ?";
-  params.push(limit, offset);
+  sql += ` ORDER BY (sc.score IS NULL), sc.score DESC LIMIT ${limit} OFFSET ${offset}`;
+  // NOTE: We completely removed the params.push line!
 
   const [rows] = await db.execute(sql, params);
   return { smes: rows, meta: { limit, offset, count: rows.length } };

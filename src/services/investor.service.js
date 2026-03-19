@@ -80,7 +80,7 @@ const getMyProfile = async (userId) => {
 };
 
 // ==========================================
-// 3. LIST SMES (Your original code)
+// 3. LIST SMES
 // ==========================================
 const listSmesWithScores = async (query) => {
   let minScore = null;
@@ -107,10 +107,28 @@ const listSmesWithScores = async (query) => {
   const limit = Math.min(rawLimit, 100);
   const offset = rawOffset;
 
-  let sql = `
+let sql = `
     SELECT 
-      s.id AS sme_id, s.business_name, s.industry_sector AS industry, s.location,
-      s.years_of_operation, s.number_of_employees AS employees, sc.score, sc.risk_level, sc.created_at AS scored_at
+      s.id AS sme_id, 
+      s.business_name, 
+      s.industry_sector AS industry, 
+      s.location,
+      s.years_of_operation, 
+      s.number_of_employees AS employees, 
+      
+      /* ADDING THE FINANCIAL METRICS FOR THE FLUTTER APP */
+      s.annual_revenue_amount_1,
+      s.annual_revenue_amount_2,
+      s.monthly_expenses,
+      s.existing_liabilities,
+      s.prior_funding_history,
+      s.bio,
+      s.website,
+      
+      sc.score, 
+      sc.risk_level, 
+      sc.explanation, /* Keeping explanation so the UI can extract the Impact Score! */
+      sc.created_at AS scored_at
     FROM smes s
     LEFT JOIN (
       SELECT t1.* FROM sme_scores t1
@@ -132,7 +150,7 @@ const listSmesWithScores = async (query) => {
   }
 
   sql += ` ORDER BY (sc.score IS NULL), sc.score DESC LIMIT ${limit} OFFSET ${offset}`;
-  // NOTE: We completely removed the params.push line!
+  // NOTE: We completely removed the params.push line!git 
 
   const [rows] = await db.execute(sql, params);
   return { smes: rows, meta: { limit, offset, count: rows.length } };

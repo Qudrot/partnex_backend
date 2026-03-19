@@ -128,7 +128,7 @@ let sql = `
       sc.score, 
       sc.risk_level, 
       sc.explanation_json AS explanation, /* Keeping explanation so the UI can extract the Impact Score! */
-      sc.created_at AS scored_at
+      sc.created_at AS scored_at_raw_timestamp
     FROM smes s
     LEFT JOIN (
       SELECT t1.* FROM sme_scores t1

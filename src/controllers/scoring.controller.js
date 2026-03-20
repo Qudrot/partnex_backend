@@ -99,7 +99,7 @@ const generateScore = async (userId, payload) => {
             impact_score: impact_score,
             reporting_consistency: consistency_score
           },
-          // This is the magic UX text that stops Score Fatigue!
+          //git This is the magic UX text that stops Score Fatigue!
           note: "Profile updated! We've saved your new details. Because your core financial ratios and impact bracket remained stable, your Credibility Score holds steady."
         }
       };
@@ -136,7 +136,8 @@ const scoringService = require("../services/scoring.service");
 
 const runMyScore = async (req, res) => {
   try {
-    const result = await scoringService.runScoreForSmeUser(req.user.id);
+    // Call the new Smart Diff function and pass the Flutter payload!
+    const result = await generateScore(req.user.id, req.body);
     return res.status(201).json(result);
   } catch (err) {
     return res.status(err.statusCode || 500).json({ message: err.message });

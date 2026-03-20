@@ -124,23 +124,28 @@ let sql = `
       s.prior_funding_history,
       s.bio,
       s.website,
-
-      /* Fetch the socials and sharing toggle! */
+      
       s.phone_number,
       s.whatsapp,
       s.linkedin,
       s.twitter,
-      s.contact_person_name,
-      s.contact_person_title,
-      s.email,
       s.allow_sharing,
       'Bank Data' AS data_source,
-    
+
+      /* Smart fallbacks! If the SME profile contact is blank, use the User signup data */
+      COALESCE(s.contact_person_name, u.name) AS contact_person_name,
+      COALESCE(s.contact_person_title, u.position) AS contact_person_title,
+      COALESCE(s.email, u.email) AS email,
+      
       sc.score, 
       sc.risk_level, 
-      sc.explanation_json AS explanation, /* Keeping explanation so the UI can extract the Impact Score! */
+      sc.explanation_json AS explanation, 
       sc.created_at AS scored_at_raw_timestamp
     FROM smes s
+    
+    /* Link the users table so we can read the signup data */
+    LEFT JOIN users u ON s.owner_user_id = u.id 
+    
     LEFT JOIN (
       SELECT t1.* FROM sme_scores t1
       INNER JOIN (

@@ -115,13 +115,26 @@ const generateScore = async (userId, payload) => {
     revenue: Number(payload.annual_revenue_amount_1) || 0,
     expenses: Number(payload.monthly_expenses) * 12 || 0, 
     debt: Number(payload.existing_liabilities) || 0,
-    revenue_growth: 0, // Add YoY calculation here if desired
+    revenue_growth: 0, 
     impact_score: impact_score,
     consistency_score: consistency_score
   };
 
-  // Call the Python ML Engine
-  const response = await axios.post(process.env.AI_SERVICE_URL, aiPayload);
+  // THE FIX: Auto-correct the URL to prevent 405 Method Not Allowed errors
+  let aiUrl = process.env.AI_SERVICE_URL || "";
+  
+  // 1. Force HTTPS to prevent POST-to-GET redirects
+  if (aiUrl.startsWith("http://")) {
+    aiUrl = aiUrl.replace("http://", "https://");
+  }
+  
+  // 2. Auto-append the /score endpoint if it is missing
+  if (!aiUrl.endsWith("/score") && !aiUrl.endsWith("/api/score") && !aiUrl.endsWith("/predict")) {
+    aiUrl = aiUrl.replace(/\/$/, '') + "/score";
+  }
+
+  // Call the Python ML Engine safely
+  const response = await axios.post(aiUrl, aiPayload);
   const aiData = response.data;
 
   // Insert the new AI score into the database here...

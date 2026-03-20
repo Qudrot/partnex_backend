@@ -120,7 +120,7 @@ const generateScore = async (userId, payload) => {
     consistency_score: consistency_score
   };
 
-  // THE FIX: Auto-correct the URL to prevent 405 Method Not Allowed errors
+  // Auto-correct the URL to prevent 405 Method Not Allowed errors
   let aiUrl = process.env.AI_SERVICE_URL || "";
   
   // 1. Force HTTPS to prevent POST-to-GET redirects
@@ -137,8 +137,18 @@ const generateScore = async (userId, payload) => {
   const response = await axios.post(aiUrl, aiPayload);
   const aiData = response.data;
 
-  // Insert the new AI score into the database here...
-  // ...
+  // Actually save the new score to the database!
+  await db.execute(
+    `INSERT INTO sme_scores (sme_id, score, risk_level, model_version, explanation_json)
+     VALUES (?, ?, ?, ?, ?)`,
+    [
+      smeId,
+      aiData.credibility_score || aiData.score, 
+      aiData.risk_level,
+      aiData.model_version || 'ai-v2.2',
+      JSON.stringify(aiData.explanation)
+    ]
+  );
 
   return aiData;
 };

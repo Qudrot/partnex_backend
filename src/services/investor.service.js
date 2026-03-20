@@ -132,7 +132,7 @@ let sql = `
       s.allow_sharing,
       'Bank Data' AS data_source,
 
-      /Force SQL to treat empty strings as NULL using NULLIF */
+      /* Force SQL to treat empty strings as NULL using NULLIF */
       COALESCE(NULLIF(s.contact_person_name, ''), NULLIF(u.name, '')) AS contact_person_name,
       COALESCE(NULLIF(s.contact_person_title, ''), NULLIF(u.position, '')) AS contact_person_title,
       COALESCE(NULLIF(s.email, ''), NULLIF(u.email, '')) AS email,

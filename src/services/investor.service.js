@@ -132,10 +132,10 @@ let sql = `
       s.allow_sharing,
       'Bank Data' AS data_source,
 
-      /* Smart fallbacks! If the SME profile contact is blank, use the User signup data */
-      COALESCE(s.contact_person_name, u.name) AS contact_person_name,
-      COALESCE(s.contact_person_title, u.position) AS contact_person_title,
-      COALESCE(s.email, u.email) AS email,
+      /Force SQL to treat empty strings as NULL using NULLIF */
+      COALESCE(NULLIF(s.contact_person_name, ''), NULLIF(u.name, '')) AS contact_person_name,
+      COALESCE(NULLIF(s.contact_person_title, ''), NULLIF(u.position, '')) AS contact_person_title,
+      COALESCE(NULLIF(s.email, ''), NULLIF(u.email, '')) AS email,
       
       sc.score, 
       sc.risk_level, 

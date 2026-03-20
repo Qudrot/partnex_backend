@@ -312,9 +312,30 @@ const updateProfile = async (userId, payload) => {
 };
 
 const getMyProfile = async (userId) => {
-  const [rows] = await db.execute("SELECT * FROM smes WHERE owner_user_id = ?", [userId]);
-  if (rows.length === 0) throw { statusCode: 404, message: "SME profile not found" };
-  return { sme: rows[0] };
+  // 1. Fetch the core SME Profile
+  const [rows] = await db.execute(
+    "SELECT * FROM smes WHERE owner_user_id = ?", 
+    [userId]
+  );
+  
+  if (rows.length === 0) {
+    throw { statusCode: 404, message: "SME profile not found" };
+  }
+
+  const sme = rows[0];
+
+  // 2. Fetch their most recent score from the sme_scores table
+  const [scoreRows] = await db.execute(
+    "SELECT * FROM sme_scores WHERE sme_id = ? ORDER BY created_at DESC LIMIT 1",
+    [sme.id]
+  );
+
+  // 3. Attach the score data securely to the payload
+  if (scoreRows.length > 0) {
+    sme.credibility = scoreRows[0];
+  }
+
+  return { sme };
 };
 
 module.exports = { createProfile, getMyProfile, updateProfile };

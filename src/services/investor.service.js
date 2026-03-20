@@ -124,7 +124,18 @@ let sql = `
       s.prior_funding_history,
       s.bio,
       s.website,
-      
+
+      /* Fetch the socials and sharing toggle! */
+      s.phone_number,
+      s.whatsapp,
+      s.linkedin,
+      s.twitter,
+      s.contact_person_name,
+      s.contact_person_title,
+      s.email,
+      s.allow_sharing,
+      'Bank Data' AS data_source,
+    
       sc.score, 
       sc.risk_level, 
       sc.explanation_json AS explanation, /* Keeping explanation so the UI can extract the Impact Score! */

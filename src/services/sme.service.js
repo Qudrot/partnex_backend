@@ -122,8 +122,12 @@ if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
       monthly_expenses,
       existing_liabilities,
       prior_funding_history,
-      repayment_history
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+      repayment_history,
+      contact_person_name: payload.contact_person_name,
+    contact_person_title: payload.contact_person_title,
+    email: payload.email,
+    allow_sharing: payload.allow_sharing
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)`, 
     [
       userId,
       business_name,
@@ -216,7 +220,12 @@ const updateProfile = async (userId, payload) => {
     whatsapp: payload.whatsapp,
     linkedin: payload.linkedin,
     twitter: payload.twitter,
-    bio: payload.bio
+    bio: payload.bio,
+
+    contact_person_name: payload.contact_person_name,
+    contact_person_title: payload.contact_person_title,
+    email: payload.email,
+    allow_sharing: payload.allow_sharing
   };
 
   // Validate numeric fields only if provided

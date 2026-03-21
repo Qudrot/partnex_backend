@@ -27,7 +27,14 @@ const createProfile = async (userId, payload) => {
     whatsapp,
     linkedin,
     twitter,
-    bio
+    bio,
+    
+    // Extracted from payload for the new columns
+    contact_person_name,
+    contact_person_title,
+    email,
+    allow_sharing,
+    data_source
   } = payload;
 
   // Validate required fields and types
@@ -56,35 +63,35 @@ const createProfile = async (userId, payload) => {
   }
 
   // Validate numeric fields
-const numericFields = {
-  years_of_operation,
-  number_of_employees,
-  annual_revenue_year_1,
-  annual_revenue_amount_1,
-  annual_revenue_year_2,
-  annual_revenue_amount_2,
-  monthly_expenses,
-  existing_liabilities
-};
+  const numericFields = {
+    years_of_operation,
+    number_of_employees,
+    annual_revenue_year_1,
+    annual_revenue_amount_1,
+    annual_revenue_year_2,
+    annual_revenue_amount_2,
+    monthly_expenses,
+    existing_liabilities
+  };
 
-for (const [key, value] of Object.entries(numericFields)) {
-  if (!Number.isFinite(Number(value))) {
-    throw { statusCode: 400, message: `${key} must be a valid number` };
+  for (const [key, value] of Object.entries(numericFields)) {
+    if (!Number.isFinite(Number(value))) {
+      throw { statusCode: 400, message: `${key} must be a valid number` };
+    }
   }
-}
 
-// Optional numeric fields
-if (annual_revenue_year_3 != null && !Number.isFinite(Number(annual_revenue_year_3))) {
-  throw { statusCode: 400, message: "annual_revenue_year_3 must be a valid number" };
-}
+  // Optional numeric fields
+  if (annual_revenue_year_3 != null && !Number.isFinite(Number(annual_revenue_year_3))) {
+    throw { statusCode: 400, message: "annual_revenue_year_3 must be a valid number" };
+  }
 
-if (annual_revenue_amount_3 != null && !Number.isFinite(Number(annual_revenue_amount_3))) {
-  throw { statusCode: 400, message: "annual_revenue_amount_3 must be a valid number" };
-}
+  if (annual_revenue_amount_3 != null && !Number.isFinite(Number(annual_revenue_amount_3))) {
+    throw { statusCode: 400, message: "annual_revenue_amount_3 must be a valid number" };
+  }
 
-if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
-  throw { statusCode: 400, message: "monthly_revenue must be a valid number" };
-}
+  if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
+    throw { statusCode: 400, message: "monthly_revenue must be a valid number" };
+  }
 
   // If year 3 is used, both year and amount must be provided
   const y3Provided = annual_revenue_year_3 != null || annual_revenue_amount_3 != null;
@@ -123,25 +130,23 @@ if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
       existing_liabilities,
       prior_funding_history,
       repayment_history,
-      contact_person_name: payload.contact_person_name,
-    contact_person_title: payload.contact_person_title,
-    email: payload.email,
-    allow_sharing: payload.allow_sharing
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)`, 
+      contact_person_name,
+      contact_person_title,
+      email,
+      allow_sharing,
+      data_source
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
     [
       userId,
       business_name,
       industry_sector,
       location,
-      
-     
       phone_number || null,
       website || null,
       whatsapp || null,
       linkedin || null,
       twitter || null,
       bio || null,
-
       Number(years_of_operation),
       Number(number_of_employees),
       Number(annual_revenue_year_1),
@@ -154,7 +159,12 @@ if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
       Number(monthly_expenses),
       Number(existing_liabilities),
       String(prior_funding_history),
-      repayment_history != null ? String(repayment_history) : null
+      repayment_history != null ? String(repayment_history) : null,
+      contact_person_name || null,
+      contact_person_title || null,
+      email || null,
+      allow_sharing === 0 ? 0 : 1, // Ensure strict boolean-to-int mapping
+      data_source || 'selfReported' // Fallback to self-reported if missing
     ]
   );
 
@@ -177,7 +187,8 @@ if (monthly_revenue != null && !Number.isFinite(Number(monthly_revenue))) {
       monthly_expenses: Number(monthly_expenses),
       existing_liabilities: Number(existing_liabilities),
       prior_funding_history: String(prior_funding_history),
-      repayment_history: repayment_history != null ? String(repayment_history) : null
+      repayment_history: repayment_history != null ? String(repayment_history) : null,
+      data_source: data_source || 'selfReported'
     }
   };
 };
@@ -225,7 +236,8 @@ const updateProfile = async (userId, payload) => {
     contact_person_name: payload.contact_person_name,
     contact_person_title: payload.contact_person_title,
     email: payload.email,
-    allow_sharing: payload.allow_sharing
+    allow_sharing: payload.allow_sharing,
+    data_source: payload.data_source //Added data_source here
   };
 
   // Validate numeric fields only if provided

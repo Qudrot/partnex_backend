@@ -107,7 +107,7 @@ const listSmesWithScores = async (query) => {
   const limit = Math.min(rawLimit, 100);
   const offset = rawOffset;
 
-let sql = `
+  let sql = `
     SELECT 
       s.id AS sme_id, 
       s.business_name, 
@@ -130,7 +130,9 @@ let sql = `
       s.linkedin,
       s.twitter,
       s.allow_sharing,
-      'Bank Data' AS data_source,
+      
+      /* 👉 THE FIX: No longer hardcoded. We fetch the real DB column, default to selfReported */
+      COALESCE(s.data_source, 'selfReported') AS data_source,
 
       /* Force SQL to treat empty strings as NULL using NULLIF */
       COALESCE(NULLIF(s.contact_person_name, ''), NULLIF(u.name, '')) AS contact_person_name,
@@ -166,7 +168,6 @@ let sql = `
   }
 
   sql += ` ORDER BY (sc.score IS NULL), sc.score DESC LIMIT ${limit} OFFSET ${offset}`;
-  // NOTE: We completely removed the params.push line!git 
 
   const [rows] = await db.execute(sql, params);
   return { smes: rows, meta: { limit, offset, count: rows.length } };

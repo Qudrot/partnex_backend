@@ -116,9 +116,13 @@ const listSmesWithScores = async (query) => {
       s.years_of_operation, 
       s.number_of_employees AS employees, 
       
-      /* ADDING THE FINANCIAL METRICS FOR THE FLUTTER APP */
+      /* ADDING ALL 6 FINANCIAL METRICS FOR THE FLUTTER APP */
+      s.annual_revenue_year_1,
       s.annual_revenue_amount_1,
+      s.annual_revenue_year_2,
       s.annual_revenue_amount_2,
+      s.annual_revenue_year_3,
+      s.annual_revenue_amount_3,
       s.monthly_expenses,
       s.existing_liabilities,
       s.prior_funding_history,
@@ -131,7 +135,7 @@ const listSmesWithScores = async (query) => {
       s.twitter,
       s.allow_sharing,
       
-      /* 👉 THE FIX: No longer hardcoded. We fetch the real DB column, default to selfReported */
+      /* No longer hardcoded. We fetch the real DB column, default to selfReported */
       COALESCE(s.data_source, 'selfReported') AS data_source,
 
       /* Force SQL to treat empty strings as NULL using NULLIF */

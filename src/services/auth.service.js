@@ -34,9 +34,14 @@ const signToken = (user) => {
   );
 };
 
-const registerUser = async ({ email, password, role }) => {
+// Added name and position to the destructuring payload
+const registerUser = async ({ email, password, role, name, position }) => {
   email = normalizeEmail(email);
   role = String(role || "").trim().toLowerCase();
+  
+  // Sanitize the new fields
+  const sanitizedName = name ? String(name).trim() : null;
+  const sanitizedPosition = position ? String(position).trim() : null;
 
   if (!email) throw { statusCode: 400, message: "Email is required" };
   if (!isValidEmail(email)) throw { statusCode: 400, message: "Invalid email address" };
@@ -58,12 +63,20 @@ const registerUser = async ({ email, password, role }) => {
 
   const password_hash = await bcrypt.hash(password.trim(), 12);
 
+  // Added name and position to the INSERT query and values array
   const [result] = await db.execute(
-    "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
-    [email, password_hash, role]
+    "INSERT INTO users (email, password_hash, role, name, position) VALUES (?, ?, ?, ?, ?)",
+    [email, password_hash, role, sanitizedName, sanitizedPosition]
   );
 
-  const user = { id: result.insertId, email, role };
+  // Return the name and position to the frontend immediately after signup
+  const user = { 
+    id: result.insertId, 
+    email, 
+    role, 
+    name: sanitizedName, 
+    position: sanitizedPosition 
+  };
   const token = signToken(user);
 
   return { user, token };
@@ -79,8 +92,9 @@ const loginUser = async ({ email, password }) => {
     throw { statusCode: 400, message: "Password is required" };
   }
 
+  // Added name and position to the SELECT query so the frontend gets them on login
   const [rows] = await db.execute(
-    "SELECT id, email, password_hash, role FROM users WHERE email = ?",
+    "SELECT id, email, password_hash, role, name, position FROM users WHERE email = ?",
     [email]
   );
 
@@ -95,7 +109,14 @@ const loginUser = async ({ email, password }) => {
     throw { statusCode: 401, message: "Invalid credentials" };
   }
 
-  const user = { id: userRow.id, email: userRow.email, role: userRow.role };
+// Include name and position in the returned user object
+  const user = { 
+    id: userRow.id, 
+    email: userRow.email, 
+    role: userRow.role,
+    name: userRow.name,
+    position: userRow.position
+  };
   const token = signToken(user);
 
   return { user, token };
